@@ -34,18 +34,21 @@ extern "C" {
     fn multiboot2_init(mb2_info: u64, mb2_magic: u32) -> bool;
 }
 
+/// 内核的主入口点
 #[no_mangle]
 unsafe extern "C" fn kernel_main(
-    mb2_info: u64,
-    mb2_magic: u64,
-    bsp_gdt_size: u64,
-    bsp_idt_size: u64,
+    mb2_info: u64, // 多引导信息
+    mb2_magic: u64, // 魔法数
+    bsp_gdt_size: u64, // GDT大小
+    bsp_idt_size: u64, // IDT大小
 ) -> ! {
     let mut gdtp = DescriptorTablePointer::<usize>::default();
+    // 将GDT和IDT的物理地址转换为虚拟地址
     let gdt_vaddr =
         MMArch::phys_2_virt(PhysAddr::new(&GDT_Table as *const usize as usize)).unwrap();
     let idt_vaddr =
         MMArch::phys_2_virt(PhysAddr::new(&IDT_Table as *const usize as usize)).unwrap();
+    // 设置GDT和IDT的基址和限制
     gdtp.base = gdt_vaddr.data() as *const usize;
     gdtp.limit = bsp_gdt_size as u16 - 1;
 
@@ -54,13 +57,17 @@ unsafe extern "C" fn kernel_main(
         limit: bsp_idt_size as u16 - 1,
     };
 
+    // 加载GDT和IDT
     x86::dtables::lgdt(&gdtp);
     x86::dtables::lidt(&idtp);
 
+    // 使用compiler_fence确保内存操作的顺序
     compiler_fence(Ordering::SeqCst);
+    // 初始化多引导信息
     multiboot2_init(mb2_info, (mb2_magic & 0xFFFF_FFFF) as u32);
     compiler_fence(Ordering::SeqCst);
 
+    // 启动内核
     start_kernel();
 }
 

@@ -9,16 +9,21 @@ unsigned int multiboot2_boot_info_size;
 #define MBI_RAW_MAX_SIZE 409600
 // 由于启动时传递的mb2 info所在的地址,在内存管理初始化之后会被覆盖，所以需要将其拷贝到一个固定的位置
 static uint8_t mbi_raw[MBI_RAW_MAX_SIZE] = {0};
-bool multiboot2_init(uint64_t mb2_info_paddr, uint32_t mb2_magic)
+bool multiboot2_init(
+  uint64_t mb2_info_paddr, // 多引导信息的物理地址
+  uint32_t mb2_magic // 用于验证的魔数
+  )
 {
+  // 将多引导信息的物理地址转换为虚拟地址
   uint64_t vaddr = (uint64_t)phys_2_virt(mb2_info_paddr);
   if (mb2_magic != MULTIBOOT2_BOOTLOADER_MAGIC)
     return false;
-  // vaddr+0 处保存了大小
+  // vaddr+0 处保存了大小 前四个字节表示多引导信息的大小
   multiboot2_boot_info_size = *(uint32_t *)vaddr;
   if (multiboot2_boot_info_size > MBI_RAW_MAX_SIZE)
     return false;
 
+  // 将多引导信息复制到全局变量mbi_raw指定的内存区域
   memcpy((void *)mbi_raw, (void *)vaddr, multiboot2_boot_info_size);
   
   return true;

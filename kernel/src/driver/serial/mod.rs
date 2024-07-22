@@ -60,6 +60,9 @@ impl UartManager {
     }
 }
 
+/// 配置计算机的串行端口（通常是RS-232接口）以便于进行数据通信的过程
+/// 这个过程包括设置波特率、数据位、停止位、奇偶校验位等
+/// 串行端口可以用于系统调试、日志输出、与其他设备的低级通信等
 pub fn serial_early_init() -> Result<(), SystemError> {
     serial8250_manager().early_init()?;
     return Ok(());

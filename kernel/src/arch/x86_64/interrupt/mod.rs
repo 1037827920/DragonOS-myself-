@@ -48,6 +48,8 @@ impl InterruptArch for X86_64InterruptArch {
         return Ok(());
     }
     unsafe fn interrupt_enable() {
+        // 是x86架构的一条汇编指令，用于设置中断标志，从而允许CPU接收外部中断。
+        // 用于在特定时刻允许或禁止中断，以控制系统的响应性和稳定性
         sti();
     }
 
