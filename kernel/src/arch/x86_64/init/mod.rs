@@ -85,8 +85,11 @@ pub fn early_setup_arch() -> Result<(), SystemError> {
         debug!("GDT_Table={:?}, IDT_Table={:?}\n", gdt_vaddr, idt_vaddr);
     }
 
+    // 设置当前核心的任务状态段(TSS)，这是处理中断和任务切换时必须正确设置的另一个关键数据结构
     set_current_core_tss(stack_start, 0);
+    // 加载任务寄存器(TR)，这是启动任务切换机制的必要步骤
     unsafe { TSSManager::load_tr() };
+    // 初始化trap和中断处理机制，确保系统能够响应硬件中断和异常
     arch_trap_init().expect("arch_trap_init failed");
 
     return Ok(());

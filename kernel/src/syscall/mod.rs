@@ -70,6 +70,7 @@ impl Syscall {
             panic!("Cannot initialize syscall more than once!");
         }
         info!("Initializing syscall...");
+        // 执行具体的初始化逻辑
         let r = crate::arch::syscall::arch_syscall_init();
         info!("Syscall init successfully!");
 

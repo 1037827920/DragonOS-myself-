@@ -1129,6 +1129,7 @@ pub fn textui_putstr(
 /// 初始化text ui框架
 #[inline(never)]
 pub fn textui_init() -> Result<i32, SystemError> {
+    // 负责实际的初始化过程
     #[cfg(target_arch = "x86_64")]
     textui_framwork_init();
 

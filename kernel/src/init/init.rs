@@ -64,11 +64,11 @@ fn do_start_kernel() {
     // 内存管理的初始化，包括slab分配器、内存映射I/O、页面管理器等的初始化
     unsafe { mm_init() };
 
-    // 系统调用管理器的重新初始化
+    // 屏幕控制模块的重新初始化
     scm_reinit().unwrap();
     // 文本用户界面框架的初始化
     textui_init().unwrap();
-    // 接口特性映射的初始化
+    // 初始化类型转换映射
     init_intertrait();
 
     // 初始化虚拟文件系统
@@ -126,5 +126,7 @@ fn init_before_mem_init() {
     serial_early_init().expect("serial early init failed");
     // 初始化显示驱动，为后续的图形输出做好准备。
     let video_ok = unsafe { VideoRefreshManager::video_init().is_ok() };
+    // 初始化屏幕控制模块
+    // 如果上面驱动初始化成功，则启用相关的图形输出功能。还负责设置文本用户界面的初始化状态，包括是否启用双缓冲和是否允许文本输出到窗口
     scm_init(video_ok);
 }

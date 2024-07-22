@@ -25,12 +25,15 @@ static MM_INIT: AtomicMMInitStatus = AtomicMMInitStatus::new(MMInitStatus::NotIn
 
 #[inline(never)]
 pub unsafe fn mm_init() {
+    // 发送字符串到默认串行端口
     send_to_default_serial8250_port("mm_init\n\0".as_bytes());
+    // 打印信息到控制台
     PrintkWriter
         .write_fmt(format_args!("mm_init() called\n"))
         .unwrap();
-    // printk_color!(GREEN, BLACK, "mm_init() called\n");
+    // printk_color!(GREEN, BLACK, "mm_init() c alled\n");
 
+    // 检查MM_INIT的静态原子状态变量，确保mm_init函数只被调用一次
     if MM_INIT
         .compare_exchange(
             MMInitStatus::NotInit,
@@ -44,18 +47,24 @@ pub unsafe fn mm_init() {
         panic!("mm_init() can only be called once");
     }
 
+    // 初始化内存管理
     MMArch::init();
 
     // init slab
+    // 初始化slab分配器
     slab_init();
 
     // enable mmio
+    // 初始化MMIO内存池
     mmio_init();
     // enable KMSG
+    // 初始化内核消息系统
     kmsg_init();
     // enable PAGE_MANAGER
+    // 初始化页管理器
     page_manager_init();
     // enable SHM_MANAGER
+    // 初始化共享内存管理器
     shm_manager_init();
 
     MM_INIT

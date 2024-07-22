@@ -405,6 +405,7 @@ pub fn scm_disable_put_to_window() {
 pub fn scm_reinit() -> Result<(), SystemError> {
     #[cfg(target_arch = "x86_64")]
     {
+        // 执行实际的重新初始化逻辑
         let r = true_scm_reinit();
         if r.is_err() {
             send_to_default_serial8250_port("scm reinit failed.\n\0".as_bytes());

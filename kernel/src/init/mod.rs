@@ -21,6 +21,7 @@ pub fn boot_params() -> &'static RwLock<BootParams> {
 
 #[inline(never)]
 fn init_intertrait() {
+    // 目的是设置一个全局的类型转换映射，这个映射允许在运行时动态地将一个类型转换为另一个类型
     intertrait::init_caster_map();
 }
 

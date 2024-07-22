@@ -964,16 +964,20 @@ fn __set_task_cpu(pcb: &Arc<ProcessControlBlock>, cpu: ProcessorId) {
     se.force_mut().set_cfs(Arc::downgrade(&rq.cfs));
 }
 
+/// 调度器初始化，调度器负责管理CPU资源，决定哪个进程或线程获得执行的组件。
 #[inline(never)]
 pub fn sched_init() {
     // 初始化percpu变量
     unsafe {
+        // 存储每个CPU的中断时间信息
         CPU_IRQ_TIME = Some(Vec::with_capacity(PerCpu::MAX_CPU_NUM as usize));
+        // 为每个CPU分配了一个初始值为CpuTim实例的指针数组，使用Box:leak避免Box被释放，从而使指针一直有效
         CPU_IRQ_TIME
             .as_mut()
             .unwrap()
             .resize_with(PerCpu::MAX_CPU_NUM as usize, || Box::leak(Box::default()));
-
+        
+        // 存储每个CPU的运行队列
         let mut cpu_runqueue = Vec::with_capacity(PerCpu::MAX_CPU_NUM as usize);
         for cpu in 0..PerCpu::MAX_CPU_NUM as usize {
             let rq = Arc::new(CpuRunQueue::new(cpu));
@@ -981,6 +985,7 @@ pub fn sched_init() {
             cpu_runqueue.push(rq);
         }
 
+        // 将cpu_runqueue封装在CPU_RUNQUEUE中
         CPU_RUNQUEUE.init(PerCpuVar::new(cpu_runqueue).unwrap());
     };
 }

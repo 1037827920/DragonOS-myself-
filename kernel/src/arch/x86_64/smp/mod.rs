@@ -195,7 +195,11 @@ pub struct X86_64SMPArch;
 impl SMPArch for X86_64SMPArch {
     #[inline(never)]
     fn prepare_cpus() -> Result<(), SystemError> {
+        // 解析系统的ACPI表来获取处理器和其他硬件的信息
+        // 这个函数首先通过ACPI管理器获取平台信息，然后从中提取处理器信息，使用这些信息初始化一个全局的SMP_BOOT_DATA
+        // 这个结构存储了关于系统中处理器的信息，比如每个处理器的物理ID和总的CPU数量
         early_acpi_boot_init()?;
+        // 根据SMP_BOOT_DATA设置哪些CPU是可能存在、当前存在的以及在线的。
         X86_64_SMP_MANAGER.build_cpu_map()?;
         return Ok(());
     }

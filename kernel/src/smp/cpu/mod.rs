@@ -303,11 +303,15 @@ impl SmpCpuManager {
 
 pub fn smp_cpu_manager_init(boot_cpu: ProcessorId) {
     unsafe {
+        // 存储SMP CPU管理器实例
         SMP_CPU_MANAGER = Some(SmpCpuManager::new());
     }
 
+    // 分别将CPU标记为可能存在的CPU和当前存在的CPU
+    // 这里，将两个状态都设置为true，表示启动CPU是存在的，并且是可能被系统使用的。
     unsafe { smp_cpu_manager().set_possible_cpu(boot_cpu, true) };
     unsafe { smp_cpu_manager().set_present_cpu(boot_cpu, true) };
 
+    // 负责执行与特定架构相关的初始化操作
     SmpCpuManager::arch_init(boot_cpu);
 }

@@ -37,11 +37,15 @@ pub extern "C" fn rs_softirq_init() {
 pub fn softirq_init() -> Result<(), SystemError> {
     info!("Initializing softirq...");
     unsafe {
+        // 通过Box::leak将这个Box泄露，转换成一个裸指针
+        // 这样做的目的是让这个实例在整个程序运行期间都有效，且不被Rust的所有权系统回收
         __SORTIRQ_VECTORS = Box::leak(Box::new(Softirq::new()));
+        // 这个数组用于跟踪每个CPU上的软件中断状态
         __CPU_PENDING = Some(Box::new(
             [VecStatus::default(); PerCpu::MAX_CPU_NUM as usize],
         ));
         let cpu_pending = __CPU_PENDING.as_mut().unwrap();
+        // 保证每个CPU上的软中断状态是正确的
         for i in 0..PerCpu::MAX_CPU_NUM {
             cpu_pending[i as usize] = VecStatus::default();
         }

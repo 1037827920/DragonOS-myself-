@@ -360,14 +360,17 @@ pub fn do_settimeofday64(time: PosixTimeSpec) -> Result<(), SystemError> {
 pub fn timekeeping_init() {
     info!("Initializing timekeeping module...");
     let irq_guard = unsafe { CurrentIrqArch::save_and_disable_irq() };
+    // 初始化时间管理器
     timekeeper_init();
 
     // TODO 有ntp模块后 在此初始化ntp模块
 
+    // 初始化时钟源
     let clock = clocksource_default_clock();
     clock
         .enable()
         .expect("clocksource_default_clock enable failed");
+    // 设置时间管理器内部状态
     timekeeper().timekeeper_setup_internals(clock);
     // 暂时不支持其他架构平台对时间的设置 所以使用x86平台对应值初始化
     let mut timekeeper = timekeeper().inner.write_irqsave();
@@ -381,6 +384,7 @@ pub fn timekeeping_init() {
 
     drop(irq_guard);
     drop(timekeeper);
+    // 初始化jiffies
     jiffies_init();
     info!("timekeeping_init successfully");
 }

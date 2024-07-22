@@ -52,17 +52,23 @@ pub fn ROOT_INODE() -> Arc<dyn IndexNode> {
 pub fn vfs_init() -> Result<(), SystemError> {
     // 使用Ramfs作为默认的根文件系统
     let ramfs = RamFS::new();
+    // 挂载文件系统
     let mount_fs = MountFS::new(ramfs, None);
+    // 获取挂载点文件系统的根节点
     let root_inode = mount_fs.root_inode();
+    // 初始化挂载列表
     init_mountlist();
     unsafe {
         __ROOT_INODE = Some(root_inode.clone());
     }
 
+    // 初始化procfs，提供进程尽心
     procfs_init().expect("Failed to initialize procfs");
 
+    // 初始化devfs，提供设备节点
     devfs_init().expect("Failed to initialize devfs");
 
+    // 初始化sysfs，系统信息的访问接口
     sysfs_init().expect("Failed to initialize sysfs");
 
     let root_entries = ROOT_INODE().list().expect("VFS init failed");
